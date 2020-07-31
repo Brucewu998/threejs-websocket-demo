@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>WebSocket-Connect-Demo</title>
+    <link rel="stylesheet" href="css/index.css">
+</head>
+<body>
+<script type="module">
+    import {
+        Scene,
+        WebGLRenderer,
+        PerspectiveCamera,
+        BoxBufferGeometry,
+        MeshPhongMaterial,
+        Mesh,
+        Color,
+        AmbientLight,
+        DirectionalLight,
+        Vector3
+    } from "./build/three.module.js";
+    import  { CSS2DObject, CSS2DRenderer } from "./libs/CSS2DRenderer.js";
+    import { TWEEN }  from "./libs/tween.module.min.js";
+    import { OrbitControls } from "./libs/OrbitControls.js";
+
+    const WIDTH = window.innerWidth, HEIGHT = window.innerHeight;
+
+    let scene, renderer, labelRenderer, camera, box;
+    let ws;
+    let lis, label;
+    let controls;
+
+    function init() {
+        scene = new Scene();
+        scene.background = new Color(0.2, 0.5, 0.8);
+
+        camera = new PerspectiveCamera(45, WIDTH/HEIGHT, 0.1, 1000);
+        camera.position.set(0, 20, 100);
+        camera.lookAt(new Vector3());
+
+        renderer = new WebGLRenderer({antialias: true});
+        renderer.setSize(WIDTH, HEIGHT);
+        renderer.setPixelRatio(window.devicePixelRatio);
+        document.body.appendChild(renderer.domElement);
+
+        labelRenderer = new CSS2DRenderer();
+        labelRenderer.setSize(WIDTH, HEIGHT);
+        labelRenderer.domElement.style.position = 'absolute';
+        labelRenderer.domElement.style.top = '0px';
+        document.body.appendChild(labelRenderer.domElement);
+
+        controls = new OrbitControls(camera, labelRenderer.domElement);
+        controls.minDistance = 5;
+        controls.maxDistance = 100;
+        controls.autoRotate = false;
+
+        let ambientLight = new AmbientLight(0xffffff, 1.0);
+        scene.add(ambientLight);
+        let directionLight = new DirectionalLight(0xffffc0, 1.0);
+        directionLight.position.set(0, 20, 30);
+        scene.add(directionLight);
+
+        box = new Mesh(
+            new BoxBufferGeometry(10, 10, 10),
+            new MeshPhongMaterial({color: 0x6699ff})
+        );
+        scene.add(box);
+        let opts = {
+            div: {
+                name: "websocket-demo-div",
+                color: "#ffffff"
+            },
+            data: {
+                x: box.position.x,
+                y: box.position.y,
+                z: box.position.z,
+                speed: 0
+            },
+            li: {
+                name: "demo-li",
+            },
+            labelName: "label"
+        };
+        label = createDivUlLiLabel(opts);
+        lis = document.getElementsByClassName("demo-li");
+        box.add(label);
+        return new Promise(resolve => {
+            resolve(box);
+        })
+    }
+
+    init().then((box) => {
+        connectWebsocket(box);
+        animate();
+    })
+
+    function animate() {
+        TWEEN.update();
+        controls.update();
+        requestAnimationFrame(animate);
+        renderer.render(scene, camera);
+        labelRenderer.render(scene, camera);
+    }
+
+    function connectWebsocket(box) {
+        if ("WebSocket" in window) {
+            ws = new WebSocket("ws://localhost:30038/wst");
+            ws.onopen = () => {
+                console.log("WebSocket 连接成功！");
+            };
+            ws.onerror = () => {
+                console.log("WebSocket 连接错误！")
+            };
+            ws.onmessage = (evt) => {
+                if (!(evt.data === "连接成功")) {
+                    let data =  JSON.parse(evt.data);
+                    console.log(data);
+                    playAnimate(box, data);
+                }
+            }
+        }
+    }
+
+    function playAnimate(box, data) {
+        let pos = {
+            x: box.position.x,
+            y: box.position.y,
+            z: box.position.z
+        }
+        new TWEEN.Tween(pos)
+            .to({x: data.x, y: data.y, z: data.z}, data.speed * 900)
+            .easing(TWEEN.Easing.Exponential.InOut)
+            .onUpdate(() => {
+                box.position.x = pos.x;
+                box.position.y = pos.y;
+                box.position.z = pos.z;
+                let i = 0;
+                let val = {
+                    x: pos.x.toFixed(2),
+                    y: pos.y.toFixed(2),
+                    z: pos.z.toFixed(2),
+                    speed: data.speed
+                }
+                for (let key in val) {
+                    lis[i++].innerText = `${key}: ${val[key]}`
+                }
+            }).start().onComplete(() => {
+        });
+    }
+
+    function createDivUlLiLabel(opts) {
+        let div = document.createElement("div");
+        div.className = opts.div.name;
+        div.style.color = opts.div.color;
+        div.style.marginTop = "-8em";
+
+        let ul = document.createElement("ul");
+        div.appendChild(ul);
+
+        for (let key in opts.data) {
+            let li = document.createElement("li");
+            li.className = opts.li.name;
+            li.innerText = `${key}: ${opts.data[key]}`;
+            ul.appendChild(li);
+        }
+
+        const label = new CSS2DObject(div);
+        label.name = opts.labelName;
+
+        return label;
+    }
+</script>
+
+</body>
+</html>

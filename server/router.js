@@ -11,10 +11,10 @@ router.ws('/wst', (ws, req) => {
         let date = moment(Date.now()).format('YYYY-MM-DD HH:mm:ss');
         console.log(`推送时间: ${date}`);
         let data = {
-            x: random(-6, 6),
-            y: random(-6, 6),
-            z: random(-6, 6),
-            speed: random(2, 4),
+            x: random(-10, 10),
+            y: random(-10, 10),
+            z: random(-10, 10),
+            speed: random(2, 5),
         }
         ws.send(JSON.stringify(data));
     }, 3000);

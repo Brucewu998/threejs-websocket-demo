@@ -1,0 +1,17 @@
+.websocket-demo-div {
+    display: flex;
+    display: -webkit-flex;
+    display: -moz-flex;
+    flex-direction: column;
+    font-family: MicrosoftYaHei;
+    text-align: left;
+    z-index: -2;
+    color: #FFFFFF;
+    background:  rgba(0, 0, 0, .55);
+    border-radius: 3px;
+    padding: 4px 8px;
+}
+body {
+    margin: 0;
+    overflow: hidden;
+}
