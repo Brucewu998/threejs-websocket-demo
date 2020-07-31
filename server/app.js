@@ -5,7 +5,7 @@ const router = require('./router');
 const app = express();
 expressWs(app);
 
-let port = 3038;
+let port = 30038;
 
 app.use('/', router);
 
