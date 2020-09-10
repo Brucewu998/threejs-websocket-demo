@@ -11,14 +11,10 @@ router.ws('/wst', (ws, req) => {
         let date = moment(Date.now()).format('YYYY-MM-DD HH:mm:ss');
         console.log(`推送时间: ${date}`);
         let data = {
-            x: random(-10, 10),
-            y: random(-10, 10),
-            z: random(-10, 10),
-            speed: random(2, 5),
+            box: getBoxData()
         }
         ws.send(JSON.stringify(data));
     }, 3000);
-    console.log(ws)
     ws.on('message', (msg) => {
         ws.send(msg);
     });
@@ -32,5 +28,17 @@ router.ws('/wst', (ws, req) => {
         console.log('连接关闭');
     })
 });
+
+const getBoxData = () => {
+    return {
+        x: random(-10, 10),
+        y: random(-10, 10),
+        z: random(-10, 10),
+        rx: random(1, 5),
+        ry: random(1, 5),
+        rz: random(1, 5),
+        speed: random(2, 5),
+    }
+}
 
 module.exports = router;

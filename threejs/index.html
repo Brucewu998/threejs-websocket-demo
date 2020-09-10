@@ -74,6 +74,9 @@
                 x: box.position.x,
                 y: box.position.y,
                 z: box.position.z,
+                rx: box.rotation.x,
+                ry: box.rotation.y,
+                rz: box.rotation.z,
                 speed: 0
             },
             li: {
@@ -115,30 +118,39 @@
                 if (!(evt.data === "连接成功")) {
                     let data =  JSON.parse(evt.data);
                     console.log(data);
-                    playAnimate(box, data);
+                    playAnimate(box, data.box);
                 }
             }
         }
     }
 
     function playAnimate(box, data) {
-        let pos = {
+        let info = {
             x: box.position.x,
             y: box.position.y,
-            z: box.position.z
+            z: box.position.z,
+            rx: box.rotation.x,
+            ry: box.rotation.y,
+            rz: box.rotation.z,
         }
-        new TWEEN.Tween(pos)
-            .to({x: data.x, y: data.y, z: data.z}, data.speed * 900)
+        new TWEEN.Tween(info)
+            .to({x: data.x, y: data.y, z: data.z, rx: data.rx, ry: data.ry, rz: data.rz}, data.speed * 900)
             .easing(TWEEN.Easing.Exponential.InOut)
             .onUpdate(() => {
-                box.position.x = pos.x;
-                box.position.y = pos.y;
-                box.position.z = pos.z;
+                box.position.x = info.x;
+                box.position.y = info.y;
+                box.position.z = info.z;
+                box.rotation.x = info.rx;
+                box.rotation.y = info.ry;
+                box.rotation.z = info.rz;
                 let i = 0;
                 let val = {
-                    x: pos.x.toFixed(2),
-                    y: pos.y.toFixed(2),
-                    z: pos.z.toFixed(2),
+                    x: info.x.toFixed(2),
+                    y: info.y.toFixed(2),
+                    z: info.z.toFixed(2),
+                    rx: info.rx.toFixed(2),
+                    ry: info.ry.toFixed(2),
+                    rz: info.rz.toFixed(2),
                     speed: data.speed
                 }
                 for (let key in val) {
